@@ -1,0 +1,620 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fitness & Nutrition Real Web Search</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            backdrop-filter: blur(10px);
+        }
+
+        h1 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 30px;
+            font-size: 2.5em;
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .api-setup {
+            background: #fff3cd;
+            border: 1px solid #ffeaa7;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 30px;
+        }
+
+        .api-setup h3 {
+            color: #856404;
+            margin-bottom: 15px;
+        }
+
+        .api-setup p {
+            color: #856404;
+            margin-bottom: 10px;
+            line-height: 1.5;
+        }
+
+        .api-setup a {
+            color: #667eea;
+            text-decoration: none;
+            font-weight: bold;
+        }
+
+        .search-section {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            margin-bottom: 30px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
+        }
+
+        .input-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #555;
+        }
+
+        input, select, textarea {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: border-color 0.3s ease;
+        }
+
+        input:focus, select:focus, textarea:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .search-controls {
+            display: grid;
+            grid-template-columns: 1fr auto;
+            gap: 15px;
+            align-items: end;
+        }
+
+        button {
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.3);
+        }
+
+        button:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .results-section {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
+        }
+
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #666;
+        }
+
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #667eea;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .result-item {
+            background: #f8f9fa;
+            border: 1px solid #e9ecef;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 15px;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .result-item:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .result-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 8px;
+        }
+
+        .result-title a {
+            color: #333;
+            text-decoration: none;
+        }
+
+        .result-title a:hover {
+            color: #667eea;
+        }
+
+        .result-url {
+            color: #667eea;
+            font-size: 14px;
+            margin-bottom: 8px;
+            word-break: break-all;
+        }
+
+        .result-description {
+            color: #666;
+            line-height: 1.5;
+            margin-bottom: 10px;
+        }
+
+        .copy-section {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 20px;
+            margin-top: 20px;
+        }
+
+        .copy-section h3 {
+            color: #333;
+            margin-bottom: 15px;
+        }
+
+        .copy-textarea {
+            background: white;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            padding: 15px;
+            font-family: monospace;
+            font-size: 14px;
+            resize: vertical;
+            min-height: 150px;
+        }
+
+        .copy-buttons {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        .copy-btn {
+            background: #28a745;
+            padding: 8px 16px;
+            font-size: 14px;
+        }
+
+        .copy-btn:hover {
+            background: #218838;
+        }
+
+        .preset-topics {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        .topic-chip {
+            background: #e9ecef;
+            border: 1px solid #dee2e6;
+            border-radius: 20px;
+            padding: 5px 12px;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .topic-chip:hover {
+            background: #667eea;
+            color: white;
+            border-color: #667eea;
+        }
+
+        .stats {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 10px;
+            margin-bottom: 20px;
+        }
+
+        .stat-item {
+            text-align: center;
+        }
+
+        .stat-number {
+            font-size: 24px;
+            font-weight: 700;
+            color: #667eea;
+        }
+
+        .stat-label {
+            font-size: 14px;
+            color: #666;
+            margin-top: 5px;
+        }
+
+        .error-message {
+            background: #f8d7da;
+            border: 1px solid #f5c6cb;
+            color: #721c24;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 15px 0;
+        }
+
+        .proxy-warning {
+            background: #d1ecf1;
+            border: 1px solid #bee5eb;
+            color: #0c5460;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 15px 0;
+        }
+
+        .alternative-search {
+            background: #e2e3e5;
+            border-radius: 10px;
+            padding: 20px;
+            margin-top: 20px;
+        }
+
+        .alternative-search h3 {
+            color: #333;
+            margin-bottom: 15px;
+        }
+
+        .search-links {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 15px;
+            margin-top: 15px;
+        }
+
+        .search-link {
+            background: #667eea;
+            color: white;
+            padding: 15px;
+            border-radius: 8px;
+            text-decoration: none;
+            text-align: center;
+            transition: transform 0.3s ease;
+        }
+
+        .search-link:hover {
+            transform: translateY(-2px);
+            background: #5a67d8;
+        }
+
+        @media (max-width: 768px) {
+            .search-controls {
+                grid-template-columns: 1fr;
+            }
+            
+            .stats {
+                flex-direction: column;
+                gap: 15px;
+            }
+            
+            .search-links {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🏋️ Real Web Search - Fitness & Nutrition</h1>
+        
+        <div class="api-setup">
+            <h3>🔧 Setup Instructions</h3>
+            <p><strong>This tool uses real web search!</strong> However, due to browser security (CORS), direct API calls aren't possible from a static website. Here are your options:</p>
+            <p>1. <strong>Use the alternative search links below</strong> - Click to search major fitness/nutrition sites directly</p>
+            <p>2. <strong>Set up a backend server</strong> - For full automation (requires technical setup)</p>
+            <p>3. <strong>Use the manual search helper</strong> - Get properly formatted search queries to use on any search engine</p>
+        </div>
+        
+        <div class="search-section">
+            <div class="input-group">
+                <label for="searchTopic">Search Topic:</label>
+                <div class="search-controls">
+                    <input type="text" id="searchTopic" placeholder="e.g., high protein breakfast recipes, HIIT workouts, meal prep ideas">
+                    <button id="searchBtn">Generate Search Links</button>
+                </div>
+                <div class="preset-topics">
+                    <span class="topic-chip" data-topic="high protein recipes">High Protein Recipes</span>
+                    <span class="topic-chip" data-topic="HIIT workouts">HIIT Workouts</span>
+                    <span class="topic-chip" data-topic="meal prep ideas">Meal Prep Ideas</span>
+                    <span class="topic-chip" data-topic="weight loss nutrition">Weight Loss Nutrition</span>
+                    <span class="topic-chip" data-topic="strength training">Strength Training</span>
+                    <span class="topic-chip" data-topic="healthy snacks">Healthy Snacks</span>
+                    <span class="topic-chip" data-topic="post workout nutrition">Post-Workout Nutrition</span>
+                    <span class="topic-chip" data-topic="vegetarian fitness">Vegetarian Fitness</span>
+                </div>
+            </div>
+
+            <div class="input-group">
+                <label for="searchSites">Target Websites:</label>
+                <select id="searchSites">
+                    <option value="general">General Web Search</option>
+                    <option value="fitness">Fitness-Focused Sites</option>
+                    <option value="nutrition">Nutrition-Focused Sites</option>
+                    <option value="scientific">Scientific/Research Sites</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="results-section">
+            <div id="results">
+                <div style="text-align: center; padding: 40px; color: #666;">
+                    <h3>🔍 Ready to Search</h3>
+                    <p>Enter your fitness or nutrition topic above and click "Generate Search Links" to get started!</p>
+                </div>
+            </div>
+
+            <div id="alternativeSearch" class="alternative-search" style="display: none;">
+                <h3>🔗 Direct Search Links</h3>
+                <p>Click these links to search specific fitness and nutrition websites:</p>
+                <div class="search-links" id="searchLinks"></div>
+            </div>
+
+            <div id="copySection" class="copy-section" style="display: none;">
+                <h3>📋 Search Queries for Manual Use</h3>
+                <p>Copy these optimized search queries to use on Google, Bing, or any search engine:</p>
+                <textarea id="copyData" class="copy-textarea" readonly></textarea>
+                <div class="copy-buttons">
+                    <button class="copy-btn" onclick="copyToClipboard()">Copy Search Queries</button>
+                    <button class="copy-btn" onclick="copyUrls()">Copy Search URLs</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentTopic = '';
+        let searchUrls = [];
+
+        // Preset topic chips
+        document.querySelectorAll('.topic-chip').forEach(chip => {
+            chip.addEventListener('click', () => {
+                document.getElementById('searchTopic').value = chip.dataset.topic;
+            });
+        });
+
+        // Search functionality
+        document.getElementById('searchBtn').addEventListener('click', generateSearchLinks);
+        document.getElementById('searchTopic').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') generateSearchLinks();
+        });
+
+        function generateSearchLinks() {
+            const topic = document.getElementById('searchTopic').value.trim();
+            const siteType = document.getElementById('searchSites').value;
+            
+            if (!topic) {
+                alert('Please enter a search topic');
+                return;
+            }
+
+            currentTopic = topic;
+            const searchBtn = document.getElementById('searchBtn');
+            const resultsDiv = document.getElementById('results');
+            const alternativeSearch = document.getElementById('alternativeSearch');
+            const copySection = document.getElementById('copySection');
+            
+            // Show loading
+            searchBtn.disabled = true;
+            searchBtn.textContent = 'Generating...';
+            
+            resultsDiv.innerHTML = `
+                <div class="loading">
+                    <div class="spinner"></div>
+                    <p>Generating search links for "${topic}"...</p>
+                </div>
+            `;
+
+            setTimeout(() => {
+                generateLinks(topic, siteType);
+                searchBtn.disabled = false;
+                searchBtn.textContent = 'Generate Search Links';
+            }, 1000);
+        }
+
+        function generateLinks(topic, siteType) {
+            const encodedTopic = encodeURIComponent(topic);
+            
+            // Define website collections
+            const websites = {
+                general: [
+                    { name: 'Google', url: `https://www.google.com/search?q=${encodedTopic}` },
+                    { name: 'Bing', url: `https://www.bing.com/search?q=${encodedTopic}` },
+                    { name: 'DuckDuckGo', url: `https://duckduckgo.com/?q=${encodedTopic}` }
+                ],
+                fitness: [
+                    { name: 'Bodybuilding.com', url: `https://www.bodybuilding.com/search?q=${encodedTopic}` },
+                    { name: 'Men\'s Health', url: `https://www.menshealth.com/search/?q=${encodedTopic}` },
+                    { name: 'Women\'s Health', url: `https://www.womenshealthmag.com/search/?q=${encodedTopic}` },
+                    { name: 'Muscle & Fitness', url: `https://www.muscleandfitness.com/search/?q=${encodedTopic}` },
+                    { name: 'ACE Fitness', url: `https://www.acefitness.org/search/?q=${encodedTopic}` },
+                    { name: 'Fitness Magazine', url: `https://www.fitnessmagazine.com/search/?q=${encodedTopic}` }
+                ],
+                nutrition: [
+                    { name: 'Healthline Nutrition', url: `https://www.healthline.com/search?q=${encodedTopic}` },
+                    { name: 'Nutrition.gov', url: `https://www.nutrition.gov/search?q=${encodedTopic}` },
+                    { name: 'EatThis.com', url: `https://www.eatthis.com/search/?q=${encodedTopic}` },
+                    { name: 'Verywell Fit', url: `https://www.verywellfit.com/search/?q=${encodedTopic}` },
+                    { name: 'MyFitnessPal Blog', url: `https://blog.myfitnesspal.com/search/?q=${encodedTopic}` },
+                    { name: 'Precision Nutrition', url: `https://www.precisionnutrition.com/search?q=${encodedTopic}` }
+                ],
+                scientific: [
+                    { name: 'PubMed', url: `https://pubmed.ncbi.nlm.nih.gov/?term=${encodedTopic}` },
+                    { name: 'Google Scholar', url: `https://scholar.google.com/scholar?q=${encodedTopic}` },
+                    { name: 'ResearchGate', url: `https://www.researchgate.net/search?q=${encodedTopic}` },
+                    { name: 'Examine.com', url: `https://examine.com/search/?q=${encodedTopic}` }
+                ]
+            };
+
+            const selectedSites = websites[siteType] || websites.general;
+            searchUrls = selectedSites;
+
+            // Display results
+            displaySearchResults(topic, selectedSites);
+            
+            // Show alternative search section
+            document.getElementById('alternativeSearch').style.display = 'block';
+            generateAlternativeLinks(selectedSites);
+            
+            // Show copy section
+            generateCopyData(topic, selectedSites);
+            document.getElementById('copySection').style.display = 'block';
+        }
+
+        function displaySearchResults(topic, sites) {
+            const resultsDiv = document.getElementById('results');
+            
+            resultsDiv.innerHTML = `
+                <div style="text-align: center; padding: 20px;">
+                    <h3>🎯 Search Links Generated</h3>
+                    <p>Generated ${sites.length} optimized search links for "<strong>${topic}</strong>"</p>
+                    <p style="margin-top: 10px; color: #666;">Click the links below to search specific websites, or copy the search queries for manual use.</p>
+                </div>
+            `;
+        }
+
+        function generateAlternativeLinks(sites) {
+            const searchLinksDiv = document.getElementById('searchLinks');
+            
+            searchLinksDiv.innerHTML = sites.map(site => `
+                <a href="${site.url}" target="_blank" class="search-link">
+                    🔍 Search ${site.name}
+                </a>
+            `).join('');
+        }
+
+        function generateCopyData(topic, sites) {
+            // Generate search queries
+            const queries = [
+                `"${topic}" fitness nutrition`,
+                `${topic} guide tutorial`,
+                `${topic} tips advice`,
+                `${topic} research study`,
+                `best ${topic} methods`,
+                `${topic} for beginners`,
+                `${topic} evidence based`,
+                `${topic} expert recommendations`
+            ];
+
+            const searchData = [
+                '=== SEARCH QUERIES ===',
+                ...queries,
+                '',
+                '=== WEBSITE URLS ===',
+                ...sites.map(site => `${site.name}: ${site.url}`),
+                '',
+                '=== GOOGLE SHEETS FORMAT ===',
+                'Website\tSearch URL\tTopic\tDate',
+                ...sites.map(site => `${site.name}\t${site.url}\t${topic}\t${new Date().toLocaleDateString()}`)
+            ].join('\n');
+
+            document.getElementById('copyData').value = searchData;
+        }
+
+        function copyToClipboard() {
+            const copyData = document.getElementById('copyData');
+            copyData.select();
+            document.execCommand('copy');
+            
+            const btn = event.target;
+            const originalText = btn.textContent;
+            btn.textContent = 'Copied!';
+            btn.style.background = '#28a745';
+            
+            setTimeout(() => {
+                btn.textContent = originalText;
+                btn.style.background = '';
+            }, 2000);
+        }
+
+        function copyUrls() {
+            const urls = searchUrls.map(site => site.url).join('\n');
+            
+            // Create temporary textarea
+            const tempTextarea = document.createElement('textarea');
+            tempTextarea.value = urls;
+            document.body.appendChild(tempTextarea);
+            tempTextarea.select();
+            document.execCommand('copy');
+            document.body.removeChild(tempTextarea);
+            
+            const btn = event.target;
+            const originalText = btn.textContent;
+            btn.textContent = 'URLs Copied!';
+            btn.style.background = '#28a745';
+            
+            setTimeout(() => {
+                btn.textContent = originalText;
+                btn.style.background = '';
+            }, 2000);
+        }
+
+        // Add some helpful tips
+        window.addEventListener('load', () => {
+            console.log('🏋️ Fitness & Nutrition Search Tool Loaded!');
+            console.log('💡 Tip: Use specific terms like "high protein vegetarian meals" for better results');
+            console.log('🔗 Tip: The generated links will open in new tabs for easy browsing');
+        });
+    </script>
+</body>
+</html>
